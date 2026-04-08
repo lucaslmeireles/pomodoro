@@ -38,7 +38,6 @@ let longBreakTime = 15 * 60;
 // Local variables - Store
 let timerInterval: number;
 let isPomodoro = true;
-let isBreak = false;
 let timeLeft = 0;
 let pomodoroCount = 0;
 
@@ -60,9 +59,7 @@ export function tooggleButton(button: HTMLElement | null) {
 function updateTimeLeft() {
   if (isPomodoro) {
     timeLeft = pomodoroTime;
-    isBreak = false;
   } else {
-    isBreak = true;
     isPomodoro = false;
     if (pomodoroCount > 0 && pomodoroCount % 4 === 0) {
       timeLeft = longBreakTime;
@@ -102,9 +99,7 @@ function resetTimer() {
   if (isPomodoro) {
     pomodoroCount++;
     isPomodoro = false;
-    isBreak = true;
   } else {
-    isBreak = false;
     isPomodoro = true;
   }
   pomodoroCycle.innerText = pomodoroCount.toString();

@@ -1,5 +1,4 @@
 import { invoke } from "@tauri-apps/api/core";
-import { tooggleButton } from "./main";
 
 interface MediaInfo {
   title: string;
