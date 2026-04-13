@@ -1,9 +1,25 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
+const { getCurrentWindow } = window.__TAURI__.window;
 import { invoke } from "@tauri-apps/api/core";
 import { updateMediaProgress } from "./media";
+import { checkNotificationPermission, showNotification } from "./notification";
 
 //Tauri window management
 const appWindow = getCurrentWindow();
+let pin = false;
+document.getElementById("pin-disabled")?.addEventListener("click", async () => {
+  pin = !pin;
+  await invoke("set_always_on_top", { alwaysOnTop: pin });
+  document.getElementById("pin-disabled")?.classList.add("hidden");
+  document.getElementById("pin-activated")?.classList.remove("hidden");
+});
+document
+  .getElementById("pin-activated")
+  ?.addEventListener("click", async () => {
+    pin = !pin;
+    await invoke("set_always_on_top", { alwaysOnTop: pin });
+    document.getElementById("pin-activated")?.classList.add("hidden");
+    document.getElementById("pin-disabled")?.classList.remove("hidden");
+  });
 
 document
   .getElementById("titlebar-minimize")
@@ -31,12 +47,13 @@ const pomodoroCycle = document.getElementById(
 const nextBreak = document.getElementById("next-break") as HTMLParagraphElement;
 
 //Config Variables
-let pomodoroTime = 25 * 60;
-let shortBreakTime = 5 * 60;
+let pomodoroTime = 60;
+let shortBreakTime = 5;
 let longBreakTime = 15 * 60;
 
 // Local variables - Store
-let timerInterval: number;
+let timerInterval: number | null = null;
+let isRunning = false;
 let isPomodoro = true;
 let timeLeft = 0;
 let pomodoroCount = 0;
@@ -70,37 +87,63 @@ function updateTimeLeft() {
   timeDisplay && (timeDisplay.innerText = formatTime(timeLeft));
 }
 
-function updateTimer() {
-  if (timeLeft > 0) {
-    timeLeft--;
-  } else {
-    resetTimer();
-  }
-  timeDisplay && (timeDisplay.innerText = formatTime(timeLeft));
+function scheduleTick() {
+  timerInterval = window.setTimeout(async () => {
+    if (!isRunning) {
+      return;
+    }
+
+    if (timeLeft > 0) {
+      timeLeft--;
+      timeDisplay && (timeDisplay.innerText = formatTime(timeLeft));
+      scheduleTick();
+    } else {
+      isRunning = false;
+      timerInterval = null;
+      await resetTimer();
+    }
+  }, 1000);
 }
 
 function startTimer() {
+  if (isRunning) {
+    return;
+  }
+
+  isRunning = true;
   tooggleButton(startButton);
   tooggleButton(resumeButton);
-  timerInterval = setInterval(updateTimer, 1000);
+  scheduleTick();
 }
 
 function resumeTimer() {
-  clearInterval(timerInterval);
+  if (!isRunning) {
+    return;
+  }
+  isRunning = false;
+  if (timerInterval !== null) {
+    window.clearTimeout(timerInterval);
+    timerInterval = null;
+  }
+
   tooggleButton(startButton);
   tooggleButton(resumeButton);
 }
 
-function resetTimer() {
-  invoke("play_finished_normal");
-  clearInterval(timerInterval);
+async function resetTimer() {
+  if (timerInterval !== null) {
+    window.clearTimeout(timerInterval);
+    timerInterval = null;
+  }
   tooggleButton(startButton);
   tooggleButton(resumeButton);
   if (isPomodoro) {
     pomodoroCount++;
     isPomodoro = false;
+    await showNotification("Pomodoro Finished", "Time for a break!");
   } else {
     isPomodoro = true;
+    await showNotification("Break Finished", "Time to get back to work!");
   }
   pomodoroCycle.innerText = pomodoroCount.toString();
   nextBreak.innerText = (pomodoroCount + 1) % 4 === 0 ? "Long" : "Short";

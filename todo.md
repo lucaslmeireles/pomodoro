@@ -8,7 +8,7 @@ TODO (Pomodoro - Windows / Tauri)
 
 ## Próximo (core: rodar em 2º plano + UX diária)
 
-- [ ] Controles de janela precisam voltar a funcionar
+- [x] Controles de janela precisam voltar a funcionar
 - [ ] Mover a lógica do timer para o Rust (engine/estado), para continuar rodando mesmo com a janela fechada/minimizada
 - [ ] Definir state machine do timer (Focus/Break + Running/Paused + Skip/Reset) e eventos para o frontend
 - [ ] Persistência: salvar/restaurar estado do timer + settings (durações, som, volume, auto-start, DND)
@@ -18,8 +18,8 @@ TODO (Pomodoro - Windows / Tauri)
   - [ ] Mostrar/ocultar janela
   - [ ] Tooltip com tempo restante
   - [ ] “Fechar” vira “minimizar para bandeja” (close-to-tray)
-- [ ] Notificações nativas:
-  - [ ] Notificar fim de Focus/Break
+- [x] Notificações nativas:
+  - [x] Notificar fim de Focus/Break
   - [ ] (Opcional) botões: “Iniciar pausa” / “Iniciar foco” / “Soneca”
 - [ ] Do Not Disturb (DND) do app:
   - [ ] Quando ligado: suprimir som + notificações (mantém tray/estado)

@@ -89,14 +89,18 @@
   height: 30px;
   user-select: none;
   display: flex;
-  flex-direction: row-reverse;
+  justify-content: space-between;
+  align-items: center;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  width: 100%;
 }
 .titlebar > .controls {
   display: flex;
+  gap: 0;
+  margin-left: auto;
 }
 .titlebar button {
   appearance: none;
@@ -199,4 +203,9 @@
 }
 .statistics-info {
   text-align: center;
+}
+
+#dnd-button #dnd-button-active {
+  position: absolute;
+  left: 0;
 }

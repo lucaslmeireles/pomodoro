@@ -1,8 +1,13 @@
+mod timer;
+mod tray_icon;
 use serde::Serialize;
+use tauri::Manager;
 use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSessionManager,
     GlobalSystemMediaTransportControlsSessionPlaybackStatus,
 };
+
+use crate::tray_icon::create_tray_menu;
 
 #[derive(Serialize)]
 pub struct MediaInfo {
@@ -68,14 +73,8 @@ async fn get_media_info() -> Result<Option<MediaInfo>, String> {
 }
 
 #[tauri::command]
-fn play_finished_normal() {
-    let sink_handle =
-        rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio stream");
-    let data = include_bytes!("sounds/rise.mp3");
-    let cursor = std::io::Cursor::new(data.as_ref());
-    let player = rodio::play(&sink_handle.mixer(), cursor).unwrap();
-    player.sleep_until_end();
-    println!("play_finished_normal");
+fn set_always_on_top(window: tauri::Window, always_on_top: bool) {
+    window.set_always_on_top(always_on_top).unwrap();
 }
 
 #[tauri::command]
@@ -107,11 +106,18 @@ async fn media_controls(command: String) -> Result<(), String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
+        .setup(|app| {
+            let window = app.get_webview_window("main").unwrap();
+            window.set_always_on_top(false).unwrap();
+            let tray = create_tray_menu(app);
+            Ok(())
+        })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             get_media_info,
-            play_finished_normal,
-            media_controls
+            media_controls,
+            set_always_on_top
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
