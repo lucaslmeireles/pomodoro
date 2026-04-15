@@ -27,7 +27,7 @@ TODO (Pomodoro - Windows / Tauri)
 
 ## UI / janela
 
-- [ ] Pin mode: botão de “sempre no topo” (always-on-top)
+- [X] Pin mode: botão de “sempre no topo” (always-on-top)
 - [ ] Botões de janela: minimizar/fechar funcionando certinho (e integrar com close-to-tray)
 - [ ] Melhorar botão (pixel art) + polimento geral
 - [ ] Criar tempo de descanso com animação do campinho e texto “gonna touch some grass”

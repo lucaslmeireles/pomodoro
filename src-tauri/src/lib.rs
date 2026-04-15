@@ -1,7 +1,7 @@
 mod timer;
 mod tray_icon;
 use serde::Serialize;
-use tauri::Manager;
+use tauri::{LogicalPosition, Manager, Position};
 use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSessionManager,
     GlobalSystemMediaTransportControlsSessionPlaybackStatus,
@@ -103,6 +103,64 @@ async fn media_controls(command: String) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn toggle_focus_mode(window: tauri::Window, is_active: bool) {
+    if is_active {
+        window.set_resizable(false).unwrap();
+        window.set_always_on_top(true).unwrap();
+        window
+            .set_size(tauri::Size::Logical(tauri::LogicalSize {
+                width: 180.0,
+                height: 80.0,
+            }))
+            .unwrap();
+    } else {
+        window.set_always_on_top(false).unwrap();
+        window
+            .set_size(tauri::Size::Logical(tauri::LogicalSize {
+                width: 430.0,
+                height: 250.0,
+            }))
+            .unwrap();
+    }
+}
+#[tauri::command]
+fn start_drag(window: tauri::Window) {
+    let _ = window.start_dragging();
+}
+#[tauri::command]
+fn snap_window(window: tauri::Window) {
+    let monitor = window.current_monitor().unwrap().unwrap();
+    let screen = monitor.size();
+
+    let win_pos = window.outer_position().unwrap();
+    let win_size = window.outer_size().unwrap();
+
+    let margin = 20.0;
+    let bottom_offset = 60.0;
+
+    let mut x = win_pos.x as f64;
+    let mut y = win_pos.y as f64;
+
+    let screen_w = screen.width as f64;
+    let screen_h = screen.height as f64;
+    let snap_threshold = 50.0;
+    if x < snap_threshold {
+        x = margin; //left
+    } else {
+        x = screen_w - win_size.width as f64 - margin; // right
+    }
+
+    if y < snap_threshold {
+        y = margin; // top
+    } else {
+        y = screen_h - win_size.height as f64 - bottom_offset; // bottom
+    }
+
+    window
+        .set_position(Position::Logical(LogicalPosition { x, y }))
+        .unwrap();
+}
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -110,14 +168,17 @@ pub fn run() {
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
             window.set_always_on_top(false).unwrap();
-            let tray = create_tray_menu(app);
+            let _tray = create_tray_menu(app);
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             get_media_info,
             media_controls,
-            set_always_on_top
+            set_always_on_top,
+            toggle_focus_mode,
+            snap_window,
+            start_drag
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

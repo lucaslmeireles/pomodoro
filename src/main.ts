@@ -1,11 +1,13 @@
 const { getCurrentWindow } = window.__TAURI__.window;
 import { invoke } from "@tauri-apps/api/core";
 import { updateMediaProgress } from "./media";
-import { checkNotificationPermission, showNotification } from "./notification";
+import { showNotification } from "./notification";
+import { toggleFocus } from "./focus";
 
 //Tauri window management
 const appWindow = getCurrentWindow();
 let pin = false;
+
 document.getElementById("pin-disabled")?.addEventListener("click", async () => {
   pin = !pin;
   await invoke("set_always_on_top", { alwaysOnTop: pin });
@@ -21,6 +23,10 @@ document
     document.getElementById("pin-disabled")?.classList.remove("hidden");
   });
 
+//Focus mode toggle
+window.addEventListener("dblclick", toggleFocus);
+
+// Titlebar buttons
 document
   .getElementById("titlebar-minimize")
   ?.addEventListener("click", () => appWindow.minimize());
@@ -47,8 +53,8 @@ const pomodoroCycle = document.getElementById(
 const nextBreak = document.getElementById("next-break") as HTMLParagraphElement;
 
 //Config Variables
-let pomodoroTime = 60;
-let shortBreakTime = 5;
+let pomodoroTime = 25 * 60;
+let shortBreakTime = 5 * 60;
 let longBreakTime = 15 * 60;
 
 // Local variables - Store
