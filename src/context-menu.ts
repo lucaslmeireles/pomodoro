@@ -5,7 +5,6 @@ import { updateTimeLeft } from "./timer";
 
 export function initConfigSync() {
   listen("config-updated", (event) => {
-    console.log(event.payload)
     const pomodoroStore = store.getState()
     store.setState({
       pomodoroConfig: {
