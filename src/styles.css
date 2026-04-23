@@ -48,8 +48,8 @@ body {
   gap: 1rem;
   background-color: transparent;
   border: none;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
 }
 
 .hidden {
@@ -74,11 +74,13 @@ body {
   left: 0;
   right: 0;
   width: 100%;
+  z-index: 9999;
 }
 .titlebar > .controls {
   display: flex;
   gap: 0;
   margin-left: auto;
+  pointer-events: auto;
 }
 .titlebar button {
   appearance: none;
@@ -90,6 +92,7 @@ body {
   align-items: center;
   width: 30px;
   background-color: transparent;
+  cursor: pointer;
 }
 
 @keyframes slideIn {
@@ -181,15 +184,6 @@ body {
 }
 .statistics-info {
   text-align: center;
-}
-
-#dnd-button {
-  position: absolute;
-  left: 0;
-}
-#dnd-button-active {
-  position: absolute;
-  left: 0;
 }
 
 body.focus-mode main > * {
@@ -295,7 +289,8 @@ body.focus-mode .pomodoro-timer {
   display: none;
 }
 
-.pomodoro-timer-display-time {
+p,
+span {
   user-select: none;
   pointer-events: none;
 }
@@ -312,4 +307,21 @@ body.focus-mode .titlebar {
   height: 20px;
   cursor: grab;
   z-index: 10;
+}
+
+button img {
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+#context-menu {
+  position: fixed;
+  background-color: #191919;
+  border: 1px solid #242424;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  padding: 12px;
+  color: #FFF;
 }

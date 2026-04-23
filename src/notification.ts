@@ -1,5 +1,8 @@
-const { isPermissionGranted, requestPermission, sendNotification } =
-  window.__TAURI__.notification;
+import { 
+  isPermissionGranted, 
+  requestPermission, 
+  sendNotification 
+} from '@tauri-apps/plugin-notification';
 
 let permissionGranted = false;
 

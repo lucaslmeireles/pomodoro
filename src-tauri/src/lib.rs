@@ -1,13 +1,16 @@
-mod timer;
-mod tray_icon;
+mod config;
+use crate::config::{AppConfig, ConfigService, MenuState};
 use serde::Serialize;
-use tauri::{LogicalPosition, Manager, Position};
+use std::sync::Mutex;
+use tauri::{
+    menu::{CheckMenuItemBuilder, MenuBuilder, SubmenuBuilder},
+    tray::TrayIconBuilder,
+    AppHandle, Manager, Runtime,
+};
 use windows::Media::Control::{
     GlobalSystemMediaTransportControlsSessionManager,
     GlobalSystemMediaTransportControlsSessionPlaybackStatus,
 };
-
-use crate::tray_icon::create_tray_menu;
 
 #[derive(Serialize)]
 pub struct MediaInfo {
@@ -128,39 +131,58 @@ fn toggle_focus_mode(window: tauri::Window, is_active: bool) {
 fn start_drag(window: tauri::Window) {
     let _ = window.start_dragging();
 }
+
 #[tauri::command]
-fn snap_window(window: tauri::Window) {
-    let monitor = window.current_monitor().unwrap().unwrap();
-    let screen = monitor.size();
-
-    let win_pos = window.outer_position().unwrap();
-    let win_size = window.outer_size().unwrap();
-
-    let margin = 20.0;
-    let bottom_offset = 60.0;
-
-    let mut x = win_pos.x as f64;
-    let mut y = win_pos.y as f64;
-
-    let screen_w = screen.width as f64;
-    let screen_h = screen.height as f64;
-    let snap_threshold = 50.0;
-    if x < snap_threshold {
-        x = margin; //left
-    } else {
-        x = screen_w - win_size.width as f64 - margin; // right
-    }
-
-    if y < snap_threshold {
-        y = margin; // top
-    } else {
-        y = screen_h - win_size.height as f64 - bottom_offset; // bottom
-    }
-
-    window
-        .set_position(Position::Logical(LogicalPosition { x, y }))
-        .unwrap();
+fn get_config_timer(app: tauri::AppHandle) -> Result<AppConfig, String> {
+    let config = ConfigService::load(&app);
+    Ok(config)
 }
+
+pub fn create_menu<R: Runtime>(
+    app: &AppHandle<R>,
+) -> tauri::Result<(tauri::menu::Menu<R>, MenuState<R>)> {
+    let config = ConfigService::load(app);
+
+    let auto_start = CheckMenuItemBuilder::new("Auto start")
+        .id("auto_start")
+        .checked(config.auto_start)
+        .build(app)?;
+
+    // Criação dos itens (Exemplo simplificado para um, repita para os outros ou use um loop)
+    let p25 = CheckMenuItemBuilder::new("25 min")
+        .id("p25")
+        .checked(config.pomodoro_time == 1500)
+        .build(app)?;
+    let p30 = CheckMenuItemBuilder::new("30 min")
+        .id("p30")
+        .checked(config.pomodoro_time == 1800)
+        .build(app)?;
+    let p40 = CheckMenuItemBuilder::new("40 min")
+        .id("p40")
+        .checked(config.pomodoro_time == 2400)
+        .build(app)?;
+    let p50 = CheckMenuItemBuilder::new("50 min")
+        .id("p50")
+        .checked(config.pomodoro_time == 3000)
+        .build(app)?;
+
+    let pomodoro_menu = SubmenuBuilder::new(app, "Pomodoro")
+        .items(&[&p25, &p30, &p40, &p50])
+        .build()?;
+
+    let menu = MenuBuilder::new(app)
+        .items(&[&auto_start, &pomodoro_menu])
+        .build()?;
+
+    Ok((
+        menu,
+        MenuState {
+            auto_start,
+            pomodoro_time: vec![(1500, p25), (1800, p30), (2400, p40), (3000, p50)],
+        },
+    ))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -168,17 +190,34 @@ pub fn run() {
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
             window.set_always_on_top(false).unwrap();
-            let _tray = create_tray_menu(app);
+            let (menu, menu_state) = create_menu(&app.app_handle())?;
+
+            app.set_menu(menu.clone())?;
+            let _tray = TrayIconBuilder::new()
+                .menu(&menu)
+                .show_menu_on_left_click(true) // Opcional: abre o menu com clique esquerdo
+                .icon(app.default_window_icon().unwrap().clone())
+                .on_menu_event(|app, event| {
+                    let state = app.state::<Mutex<MenuState<tauri::Wry>>>();
+                    let state = state.lock().unwrap();
+
+                    state.handle_event(app, event.id().as_ref());
+                })
+                .build(app)?;
+
+            app.manage(Mutex::new(menu_state));
+
             Ok(())
         })
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![
             get_media_info,
             media_controls,
             set_always_on_top,
             toggle_focus_mode,
-            snap_window,
-            start_drag
+            start_drag,
+            get_config_timer
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

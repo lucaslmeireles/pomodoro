@@ -12,7 +12,7 @@ TODO (Pomodoro - Windows / Tauri)
 - [ ] Mover a lógica do timer para o Rust (engine/estado), para continuar rodando mesmo com a janela fechada/minimizada
 - [ ] Definir state machine do timer (Focus/Break + Running/Paused + Skip/Reset) e eventos para o frontend
 - [ ] Persistência: salvar/restaurar estado do timer + settings (durações, som, volume, auto-start, DND)
-- [ ] System tray (ícone + menu):
+- [x] System tray (ícone + menu):
   - [ ] Start/Pause/Resume
   - [ ] Skip / Reset
   - [ ] Mostrar/ocultar janela
@@ -24,13 +24,19 @@ TODO (Pomodoro - Windows / Tauri)
 - [ ] Do Not Disturb (DND) do app:
   - [ ] Quando ligado: suprimir som + notificações (mantém tray/estado)
   - [ ] (Opcional) exceções configuráveis (ex: permitir notificação no fim da pausa)
+- [x] Menu de config, clicando com o direito no time a pessoa consegue definir com system tray
+- [x] tempo do pomodoro
+- [ ] tempo das pausas curtas e longas
+- [ ] notificação
+- [x] iniciar automatico
 
 ## UI / janela
 
-- [X] Pin mode: botão de “sempre no topo” (always-on-top)
+- [x] Pin mode: botão de “sempre no topo” (always-on-top)
 - [ ] Botões de janela: minimizar/fechar funcionando certinho (e integrar com close-to-tray)
-- [ ] Melhorar botão (pixel art) + polimento geral
+- [ x] Melhorar botão (pixel art) + polimento geral
 - [ ] Criar tempo de descanso com animação do campinho e texto “gonna touch some grass”
+- [x ] Focus mode( modo apenas com o tempo e sempre fixo)
 
 ## Sounds (plano longo)
 

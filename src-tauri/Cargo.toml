@@ -30,4 +30,5 @@ rodio = {
   version = "0.22.2",
 }
 tauri-plugin-notification = "2"
+tauri-plugin-store = "2.4.2"
 

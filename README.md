@@ -2,7 +2,7 @@
 
 A Pomodoro / focus timer built with **Tauri** (Rust backend + web frontend), targeting **Windows**.
 
-In addition to the timer UI, the app integrates with **Windows media sessions**: it can read *now playing* info and send basic media commands (play/pause/skip/rewind). It also plays a finish sound from the Rust side.
+In addition to the timer UI, the app integrates with **Windows media sessions**: it can read _now playing_ info and send basic media commands (play/pause/skip/rewind). It also plays a finish sound from the Rust side.
 
 ## Features
 
@@ -16,7 +16,6 @@ In addition to the timer UI, the app integrates with **Windows media sessions**:
 
 Planned “daily driver” features:
 
-- **Timer engine in Rust** so it keeps running in the background
 - **System tray** controls + close-to-tray
 - **Native notifications** on session end
 - **Pin mode** (always on top) + **Do Not Disturb**
